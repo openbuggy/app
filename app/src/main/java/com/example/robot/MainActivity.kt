@@ -1,5 +1,9 @@
 package com.example.robot
 
+import android.content.Context
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbEndpoint
+import android.hardware.usb.UsbManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -17,6 +21,7 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import org.json.JSONObject
 import org.webrtc.*
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 
 class MainActivity : ComponentActivity() {
@@ -25,10 +30,29 @@ class MainActivity : ComponentActivity() {
     lateinit var webSocket: WebSocket
     lateinit var peerConnection: PeerConnection
     lateinit var controllerId: String
+    lateinit var speedController: UsbEndpoint
+
+    private inner class DataChannelObserver : DataChannel.Observer {
+        override fun onBufferedAmountChange(p0: Long) {
+            Log.d(LogTag, "onBufferedAmountChange")
+        }
+
+        override fun onStateChange() {
+            Log.d(LogTag, "onStateChange")
+        }
+
+        override fun onMessage(buffer: DataChannel.Buffer?) {
+            Log.d(LogTag, "onStateChange")
+            val text = StandardCharsets.UTF_8.decode(buffer!!.data).toString()
+            val message = JSONObject(text)
+            Log.d(LogTag, message.toString())
+        }
+    }
 
     private inner class PeerConnectionObserver : PeerConnection.Observer {
         override fun onDataChannel(p0: DataChannel?) {
             Log.d(LogTag, "onDataChannel")
+            p0!!.registerObserver(DataChannelObserver())
         }
 
         override fun onIceConnectionReceivingChange(p0: Boolean) {
@@ -131,6 +155,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
+        val deviceList: HashMap<String, UsbDevice> = usbManager.deviceList
+        val device = deviceList.values.first()
+        try {
+            val connection = usbManager.openDevice(device)
+            val intf = device.getInterface(0)
+            connection.claimInterface(intf, true)
+            speedController = intf.getEndpoint(0)
+        } catch (e: Exception) {
+            Log.d(LogTag, e.toString())
+        }
+
         val request = okhttp3.Request.Builder().url("ws://192.168.0.45:8080/connect").build()
         webSocket = OkHttpClient().newWebSocket(request, SignalerListener())
 
@@ -147,7 +183,7 @@ class MainActivity : ComponentActivity() {
 
         val rtcConfig = PeerConnection.RTCConfiguration(
             arrayListOf(
-                PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
+                //PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
             )
         ).apply { sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN }
         peerConnection =
