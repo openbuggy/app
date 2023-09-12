@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.robot"
-        minSdk = 33
+        minSdkVersion(rootProject.extra["defaultMinSdkVersion"] as Int)
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -66,4 +66,7 @@ dependencies {
 
     implementation("io.github.webrtc-sdk:android:114.5735.02")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
+    implementation("com.github.mik3y:usb-serial-for-android:3.6.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
 }
