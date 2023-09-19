@@ -56,6 +56,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -64,9 +65,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
     implementation("io.github.webrtc-sdk:android:114.5735.02")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
-
     implementation("com.github.mik3y:usb-serial-for-android:3.6.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
 }
