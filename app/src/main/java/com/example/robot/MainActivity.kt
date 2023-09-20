@@ -214,7 +214,7 @@ class MainActivity : ComponentActivity() {
             Log.d(LogTag, "iceconnectionstate changed to $iceConnectionState")
             if (iceConnectionState == PeerConnection.IceConnectionState.FAILED) {
                 peerConnection!!.close()
-                dataChannel!!.close()
+                dataChannel?.close()
                 peerConnection = null
                 dataChannel = null
 
