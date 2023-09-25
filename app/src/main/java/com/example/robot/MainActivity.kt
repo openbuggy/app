@@ -1,6 +1,7 @@
 package com.example.robot
 
 import android.Manifest
+import android.hardware.camera2.CaptureRequest
 import android.hardware.usb.UsbManager
 import android.location.Location
 import android.net.ConnectivityManager
@@ -36,7 +37,9 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import org.json.JSONObject
+import org.webrtc.Camera2Capturer
 import org.webrtc.Camera2Enumerator
+import org.webrtc.CameraVideoCapturer
 import org.webrtc.DataChannel
 import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
@@ -62,7 +65,7 @@ class MainActivity : ComponentActivity() {
         private val LogTag = MainActivity::class.java.simpleName
     }
 
-    private val ID = UUID.randomUUID().toString()
+    private val ID = "robot"
 
     private lateinit var webSocket: WebSocket
     private val webSocketSendChannel = Channel<String>()
@@ -70,6 +73,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var peerConnectionFactory: PeerConnectionFactory
     private lateinit var rtcConfig: PeerConnection.RTCConfiguration
     private lateinit var videoTrack: VideoTrack
+    private lateinit var capturer: CameraVideoCapturer
     private var peerConnection: PeerConnection? = null
     private var dataChannel: DataChannel? = null
 
@@ -193,8 +197,21 @@ class MainActivity : ComponentActivity() {
             val text = StandardCharsets.UTF_8.decode(buffer!!.data).toString()
             //Log.d(LogTag, "datachannel message $text")
             val message = JSONObject(text)
-            this@MainActivity.lifecycleScope.launch {
-                controlChannel.send(Control(message.getInt("throttle"), message.getInt("steering")))
+            when (message.getString("type")) {
+                "control" -> this@MainActivity.lifecycleScope.launch {
+                    controlChannel.send(
+                        Control(
+                            message.getInt("throttle"),
+                            message.getInt("steering")
+                        )
+                    )
+                }
+                "light" -> {
+                    Log.d(LogTag, "toggle light")
+                    val requestBuilder = (capturer as Camera2Capturer).captureRequestBuilder
+                    requestBuilder.set(CaptureRequest.FLASH_MODE, if (requestBuilder.get(CaptureRequest.FLASH_MODE) == CaptureRequest.FLASH_MODE_TORCH) CaptureRequest.FLASH_MODE_OFF else CaptureRequest.FLASH_MODE_TORCH);
+                    (capturer as Camera2Capturer).setRepeatingRequest()
+                }
             }
         }
     }
@@ -412,7 +429,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val webSocketRequest =
-            okhttp3.Request.Builder().url("ws://34.147.125.161:5003/connect?id=$ID").build()
+            okhttp3.Request.Builder().url("wss://signaling-qzgpzgyo2a-ez.a.run.app/connect?id=$ID").build()
 
         fun connectWebSocket() {
             webSocket =
@@ -444,10 +461,11 @@ class MainActivity : ComponentActivity() {
         Log.d(LogTag, "peerConnectionFactory created")
 
         val cameraEnumerator = Camera2Enumerator(applicationContext)
-        val capturer =
+        capturer =
             cameraEnumerator.createCapturer(cameraEnumerator.deviceNames.find { cameraName ->
                 cameraEnumerator.isBackFacing(cameraName)
             }!!, null)
+
         val surfaceTextureHelper = SurfaceTextureHelper.create(
             "SurfaceTextureHelperThread", eglContext
         )
@@ -501,4 +519,3 @@ class MainActivity : ComponentActivity() {
         // add speedController.close in writeSpeedController
     }
 }
-
