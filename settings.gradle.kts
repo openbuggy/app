@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "robot"
+rootProject.name = "app"
 include(":app")

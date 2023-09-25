@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.robot"
+    namespace = "org.openbuggy.app"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.robot"
+        applicationId = "org.openbuggy.app"
         minSdkVersion(rootProject.extra["defaultMinSdkVersion"] as Int)
         targetSdk = 33
         versionCode = 1
