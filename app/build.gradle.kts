@@ -12,7 +12,7 @@ android {
         minSdkVersion(rootProject.extra["defaultMinSdkVersion"] as Int)
         targetSdk = 33
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -68,5 +68,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("com.github.mik3y:usb-serial-for-android:3.6.0")
-    debugImplementation(files("libs/libwebrtc.aar"))
+    implementation(files("libs/libwebrtc.aar"))
 }
